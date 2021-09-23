@@ -84,3 +84,9 @@ fellow_df = read_excel("data_import_examples/LotR_Words.xlsx", range = "B3:D6")
 ``` r
 pulsa_df = read_sas("data_import_examples/public_pulse_data.sas7bdat")
 ```
+
+## export data
+
+``` r
+write_csv(fellow_df, "data_import_examples/fellowship_words.csv")
+```
