@@ -629,3 +629,98 @@ arrange(litters_df, gd_of_birth, gd0_weight)
     ## 10 Con7  #1/2/95/2           27          42            19               8
     ## # … with 39 more rows, and 2 more variables: pups_dead_birth <dbl>,
     ## #   pups_survive <dbl>
+
+## Pipes
+
+``` r
+litters_data_row = read_csv("data_import_examples/FAS_litters.csv")
+```
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   Group = col_character(),
+    ##   `Litter Number` = col_character(),
+    ##   `GD0 weight` = col_double(),
+    ##   `GD18 weight` = col_double(),
+    ##   `GD of Birth` = col_double(),
+    ##   `Pups born alive` = col_double(),
+    ##   `Pups dead @ birth` = col_double(),
+    ##   `Pups survive` = col_double()
+    ## )
+
+``` r
+litters_clean_name = janitor::clean_names(litters_data_row )
+litters_select = select(litters_clean_name, group, pups_survive)
+litters_filtered = filter(litters_select, group == "Con7")
+
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv") %>%
+  janitor::clean_names() %>% # just move on with current df
+  select(group, pups_survive) %>%
+  filter(group == "Con7")
+```
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   Group = col_character(),
+    ##   `Litter Number` = col_character(),
+    ##   `GD0 weight` = col_double(),
+    ##   `GD18 weight` = col_double(),
+    ##   `GD of Birth` = col_double(),
+    ##   `Pups born alive` = col_double(),
+    ##   `Pups dead @ birth` = col_double(),
+    ##   `Pups survive` = col_double()
+    ## )
+
+``` r
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv") %>%
+  janitor::clean_names() %>%
+  select(-pups_survive) %>%
+  mutate(
+    weight_change = gd18_weight - gd0_weight,
+    group = str_to_lower(group)
+  ) %>%
+  drop_na(weight_change) %>%
+  filter(group %in% c("con7", "con8")) %>%
+  select(litter_number, group, weight_change, everything())
+```
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   Group = col_character(),
+    ##   `Litter Number` = col_character(),
+    ##   `GD0 weight` = col_double(),
+    ##   `GD18 weight` = col_double(),
+    ##   `GD of Birth` = col_double(),
+    ##   `Pups born alive` = col_double(),
+    ##   `Pups dead @ birth` = col_double(),
+    ##   `Pups survive` = col_double()
+    ## )
+
+## Tidy data
+
+``` r
+pulse_df = read_sas("data_import_examples/public_pulse_data.sas7bdat") %>%
+  janitor::clean_names()
+```
+
+Try to pivot
+
+``` r
+pulse_tidy = 
+  pulse_df %>%
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to = "visit",
+    names_prefix = "bdi_score_",
+    values_to = "bdi"
+  ) %>%
+  mutate(
+    visit = replace(visit, visit == "bl", "00m"), # change baseline value
+    visit = factor(visit)
+  )
+```

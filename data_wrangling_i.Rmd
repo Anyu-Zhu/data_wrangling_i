@@ -173,5 +173,29 @@ litters_df =
   select(litter_number, group, weight_change, everything())
 ```
 
+## Tidy data
+
+
+```{r}
+pulse_df = read_sas("data_import_examples/public_pulse_data.sas7bdat") %>%
+  janitor::clean_names()
+```
+
+Try to pivot
+```{r}
+pulse_tidy = 
+  pulse_df %>%
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to = "visit",
+    names_prefix = "bdi_score_",
+    values_to = "bdi"
+  ) %>%
+  mutate(
+    visit = replace(visit, visit == "bl", "00m"), # change baseline value
+    visit = factor(visit)
+  )
+```
+
 
 
