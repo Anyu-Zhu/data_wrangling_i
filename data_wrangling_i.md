@@ -749,3 +749,88 @@ analysis_df %>%
 | :-------- | -: | -: |
 | treatment | 4 | 8 |
 | control   | 3 | 6 |
+
+## bind rows
+
+import the LotR movie words stuff
+
+``` r
+fellowship_df = 
+  read_excel("data_import_examples/LotR_Words.xlsx", range = "B3:D6") %>%
+  mutate(movie = "fellowship_rings")
+
+two_towers_df = 
+  read_excel("data_import_examples/LotR_Words.xlsx", range = "F3:H6") %>%
+  mutate(movie = "two_towers")
+
+return_df = 
+  read_excel("data_import_examples/LotR_Words.xlsx", range = "J3:L6") %>%
+  mutate(movie = "return_king")
+
+lotr_df = 
+  bind_rows(fellowship_df, two_towers_df, return_df) %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    female:male,
+    names_to = "sex",
+    values_to = "words"
+  ) %>%
+  relocate(movie)
+```
+
+(don’t use `rbind()` anymore\! Always use `bind_rows`)
+
+## joins
+
+Look at FAS data. This imports and cleaned the litters & pups data.
+
+``` r
+litters_df = 
+  read_csv("data_import_examples/FAS_litters.csv") %>%
+  janitor::clean_names() %>%
+  separate(group, into = c("dose", "day_of_tx"), 3) %>%
+  relocate(litter_number) %>%
+  mutate(dose = str_to_lower(dose))
+```
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   Group = col_character(),
+    ##   `Litter Number` = col_character(),
+    ##   `GD0 weight` = col_double(),
+    ##   `GD18 weight` = col_double(),
+    ##   `GD of Birth` = col_double(),
+    ##   `Pups born alive` = col_double(),
+    ##   `Pups dead @ birth` = col_double(),
+    ##   `Pups survive` = col_double()
+    ## )
+
+``` r
+pups_df = 
+  read_csv("data_import_examples/FAS_pups.csv") %>%
+  janitor::clean_names() %>%
+  mutate(sex = recode(sex, `1` = "male", `2` = "female")) 
+```
+
+    ## 
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## cols(
+    ##   `Litter Number` = col_character(),
+    ##   Sex = col_double(),
+    ##   `PD ears` = col_double(),
+    ##   `PD eyes` = col_double(),
+    ##   `PD pivot` = col_double(),
+    ##   `PD walk` = col_double()
+    ## )
+
+always use pivot\_longer(); pivot\_wider() instead of gather() and
+spread()\!\!
+
+Join these up\!
+
+``` r
+fas_df = 
+  left_join(pups_df, litters_df, by = "litter_number") %>% 
+  relocate(litter_number, dose, day_of_tx)
+```
